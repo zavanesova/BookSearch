@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import Jumbotron from "../components/jumbotron";
 import { List, ListItem } from "../components/list";
 import axios from "axios";
+import db from "../models"
 
 class Books extends Component {
     state = {
@@ -34,6 +35,21 @@ class Books extends Component {
 
     saveBook = () => {
         //axios.post? with path to mongodb
+        axios.post("/api/books", (req, res) => {
+            db.Book.create({
+                title: res.volumeInfo.title,
+                authors: res.volumeInfo.authors,
+                description: res.volumeInfo.description,
+                image: res.volumeInfo.imageLinks.thumbnail,
+                link: res.volumeInfo.canonicalVolumeLink
+            })
+            .then((dbBook) => {
+                res.json(dbBook);
+            })
+            .catch((err)=> {
+                res.json(err);
+            })
+        });
     }
 
     handleInputChange = event => {
@@ -74,9 +90,19 @@ class Books extends Component {
                     <List>
                         {this.state.books.map(book => (
                             <ListItem key = {book.id}>
-                                <p>{book.volumeInfo.title}</p>
-                                <img src={book.volumeInfo.imageLinks.thumbnail} alt={book.volumeInfo.title}/>
-                                <button type="submit" className="btn btn-dark" onClick={this.saveBook}>Save Book</button>
+                                <div className="row">
+                                    <div className="col-md-2">
+                                        <img src={book.volumeInfo.imageLinks.thumbnail} alt={book.volumeInfo.title}/>
+                                    </div>
+                                    <div className="col-md-10">
+                                    <p>{book.volumeInfo.title}</p>
+                                    <p>{book.volumeInfo.authors}</p>
+                                    <p>{book.volumeInfo.description}</p>
+                                    <p><a href={book.volumeInfo.canonicalVolumeLink}>Link</a></p>
+                                    <button type="submit" className="btn btn-dark" onClick={this.saveBook}>Save Book</button>
+                                    </div>
+                                </div>
+
                             </ListItem>
                         ))}
                     </List>
